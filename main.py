@@ -1,5 +1,5 @@
+#ЕЩЕ ДОБАВИТЬ БАЗУ ДАННЫХ И БИБЛИОТЕКУ
 import tkinter as tk
-import os
 import openai
 openai.api_key = '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'
 
@@ -7,11 +7,9 @@ openai.api_key = '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'
 root = tk.Tk()
 root.title("Чат")
 
-# Функция для авторизации и перехода на страницу чата
 def login():
-    # Подключение к OpenAI API (не забудьте вставить свой ключ)
     # Код для авторизации пользователя
-    # ...
+    # СДЕЛАТЬ
 
     # Переход на страницу чата
     chat_page()
@@ -43,7 +41,6 @@ def chat_page():
     # Функция для отправки сообщения
     def send_message():
         message = entry_field.get()
-        # Отправка сообщения на OpenAI для обработки
         prompt_text = "User: " + message + "\nAI:"
         response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-1106",
@@ -57,13 +54,11 @@ def chat_page():
         chat_display.insert(tk.END, "User: " + message + '\n')
         chat_display.insert(tk.END, "AI: " + response.choices[0].message.content + '\n')
     
-    entry_field.delete(0, tk.END)  # Очистить поле ввода
-
+    entry_field.delete(0, tk.END)
     # Кнопка для отправки сообщения
     send_button = tk.Button(input_frame, text="Send", command=send_message)
     send_button.pack(side=tk.RIGHT)
 
-# Экран авторизации
 login_screen = tk.Frame(root)
 login_screen.pack()
 
@@ -85,5 +80,4 @@ login_button.pack()
 register_button = tk.Button(login_screen, text="Register")
 register_button.pack()
 
-# Запуск основного цикла приложения
 root.mainloop()
