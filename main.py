@@ -3,6 +3,7 @@ import openai
 from sqlalchemy import create_engine, Column, String, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import socket
 
 api_doc_name = 'api_key.txt'
 with open(api_doc_name, 'r', encoding='utf-8') as file:
@@ -100,7 +101,7 @@ def chat_page():
     # Отобразить страницу чата
     chat_window = tk.Toplevel(root)
     chat_window.title("Chat with bot")
-
+    
     # Окно чата
     chat_frame = tk.Frame(chat_window)
     chat_frame.pack(padx=10, pady=10)
@@ -127,12 +128,12 @@ def chat_page():
             {"role": "user", "content": prompt_text}
         ]
         )
-    
+        entry_field.delete(0, tk.END)
         # Получение ответа и отображение сообщения
         chat_display.insert(tk.END, "User: " + message + '\n')
         chat_display.insert(tk.END, "AI: " + response.choices[0].message.content + '\n')
     
-    entry_field.delete(0, tk.END)
+    
     # Кнопка для отправки сообщения
     send_button = tk.Button(input_frame, text="Send", command=send_message)
     send_button.pack(side=tk.RIGHT)
