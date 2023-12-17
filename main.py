@@ -75,7 +75,17 @@ def login():
         print("Successful authorization:", user)
         chat_page()
     else:
-        print("Wrong login or password")  
+        show_error_mess()
+
+def show_error_mess():
+    error_screen = tk.Toplevel(root)
+    error_screen.title("Error")
+    
+    error_label = tk.Label(error_screen, text="Wrong login or password")
+    error_label.pack()
+
+    ok_button = tk.Button(error_screen, text="OK", command=error_screen.destroy)
+    ok_button.pack()
 
 # Функция для отображения страницы чата
 def chat_page():
