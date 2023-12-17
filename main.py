@@ -1,24 +1,29 @@
-#ЕЩЕ ДОБАВИТЬ БАЗУ ДАННЫХ И БИБЛИОТЕКУ
 import tkinter as tk
 import openai
-import sqlite3
+from sqlalchemy import create_engine, Column, String, Integer
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
 api_doc_name = 'api_key.txt'
 with open(api_doc_name, 'r', encoding='utf-8') as file:
     apikey = file.read()
 openai.api_key = apikey
 
-# Создание базы данных и таблицы пользователей (если её нет)
-connection = sqlite3.connect('users.db')
-cursor = connection.cursor()
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        login TEXT,
-        password TEXT,
-        email TEXT
-    )
-''')
-connection.commit()
+Base = declarative_base()
+
+# Определение модели пользователя
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    login = Column(String)
+    password = Column(String)
+    email = Column(String)
+
+# Создание соединения с базой данных и сессии
+engine = create_engine('sqlite:///users.db', echo=True)
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+session = Session()
 
 # Функция для регистрации нового пользователя
 def register():
@@ -28,11 +33,9 @@ def register():
         new_email = new_email_entry.get()
 
         # Сохранение нового пользователя в базу данных
-        cursor.execute('''
-            INSERT INTO users (login, password, email)
-            VALUES (?, ?, ?)
-        ''', (new_login, new_password, new_email))
-        connection.commit()
+        new_user = User(login=new_login, password=new_password, email=new_email)
+        session.add(new_user)
+        session.commit()
 
         print("New login:", new_login)
         print("New password:", new_password)
@@ -69,16 +72,15 @@ def login():
     entered_password = password_entry.get()
 
     # Проверка введенного логина и пароля в базе данных
-    cursor.execute('''
-        SELECT * FROM users WHERE login=? AND password=?
-        ''', (entered_login, entered_password))
+    user = session.query(User).filter_by(login=entered_login, password=entered_password).first()
 
-    user = cursor.fetchone()
     if user:
         print("Successful authorization:", user)
+        root.withdraw()
         chat_page()
     else:
         show_error_mess()
+
 
 def show_error_mess():
     error_screen = tk.Toplevel(root)
@@ -156,7 +158,10 @@ login_button.pack()
 register_button = tk.Button(root, text="Registration", command=register)
 register_button.pack()
 
-root.mainloop()
+def on_closing():
+    session.close() 
+    root.destroy()
 
-# Закрытие соединения с базой данных после завершения работы
-connection.close()
+root.protocol("WM_DELETE_WINDOW", on_closing)
+
+root.mainloop()
