@@ -2,7 +2,10 @@
 import tkinter as tk
 import openai
 import sqlite3
-openai.api_key = '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'
+api_doc_name = 'api_key.txt'
+with open(api_doc_name, 'r', encoding='utf-8') as file:
+    apikey = file.read()
+openai.api_key = apikey
 
 # Создание базы данных и таблицы пользователей (если её нет)
 connection = sqlite3.connect('users.db')
