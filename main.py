@@ -80,7 +80,7 @@ def login():
 # Функция для отображения страницы чата
 def chat_page():
     # Закрыть окно авторизации
-    root.destroy()
+    root.withdraw()
 
     # Отобразить страницу чата
     chat_window = tk.Toplevel(root)
