@@ -1,27 +1,90 @@
 #ЕЩЕ ДОБАВИТЬ БАЗУ ДАННЫХ И БИБЛИОТЕКУ
 import tkinter as tk
 import openai
+import sqlite3
 openai.api_key = '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'
 
-# Инициализация окна
-root = tk.Tk()
-root.title("Чат")
+# Создание базы данных и таблицы пользователей (если её нет)
+connection = sqlite3.connect('users.db')
+cursor = connection.cursor()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        login TEXT,
+        password TEXT,
+        email TEXT
+    )
+''')
+connection.commit()
+
+# Функция для регистрации нового пользователя
+def register():
+    def save_user_info():
+        new_login = new_nickname_entry.get()
+        new_password = new_password_entry.get()
+        new_email = new_email_entry.get()
+
+        # Сохранение нового пользователя в базу данных
+        cursor.execute('''
+            INSERT INTO users (login, password, email)
+            VALUES (?, ?, ?)
+        ''', (new_login, new_password, new_email))
+        connection.commit()
+
+        print("New login:", new_login)
+        print("New password:", new_password)
+        print("New mail:", new_email)
+
+        register_screen.destroy()
+
+    register_screen = tk.Toplevel(root)
+    register_screen.title("Registration")
+
+    new_nickname_label = tk.Label(register_screen, text="New login:")
+    new_nickname_label.pack()
+
+    new_nickname_entry = tk.Entry(register_screen)
+    new_nickname_entry.pack()
+
+    new_password_label = tk.Label(register_screen, text="New password:")
+    new_password_label.pack()
+
+    new_password_entry = tk.Entry(register_screen, show="*")
+    new_password_entry.pack()
+
+    new_email_label = tk.Label(register_screen, text="New mail:")
+    new_email_label.pack()
+
+    new_email_entry = tk.Entry(register_screen)
+    new_email_entry.pack()
+
+    save_button = tk.Button(register_screen, text="Save", command=save_user_info)
+    save_button.pack()
 
 def login():
-    # Код для авторизации пользователя
-    # СДЕЛАТЬ
+    entered_login = nickname_entry.get()
+    entered_password = password_entry.get()
 
-    # Переход на страницу чата
-    chat_page()
+    # Проверка введенного логина и пароля в базе данных
+    cursor.execute('''
+        SELECT * FROM users WHERE login=? AND password=?
+        ''', (entered_login, entered_password))
+
+    user = cursor.fetchone()
+    if user:
+        print("Successful authorization:", user)
+        chat_page()
+    else:
+        print("Wrong login or password")  
 
 # Функция для отображения страницы чата
 def chat_page():
     # Закрыть окно авторизации
-    login_screen.destroy()
+    root.destroy()
 
     # Отобразить страницу чата
     chat_window = tk.Toplevel(root)
-    chat_window.title("Чат с ботом")
+    chat_window.title("Chat with bot")
 
     # Окно чата
     chat_frame = tk.Frame(chat_window)
@@ -59,25 +122,28 @@ def chat_page():
     send_button = tk.Button(input_frame, text="Send", command=send_message)
     send_button.pack(side=tk.RIGHT)
 
-login_screen = tk.Frame(root)
-login_screen.pack()
+root = tk.Tk()
+root.title("Authorization")
 
-nickname_label = tk.Label(login_screen, text="Nickname:")
+nickname_label = tk.Label(root, text="Login:")
 nickname_label.pack()
 
-nickname_entry = tk.Entry(login_screen)
+nickname_entry = tk.Entry(root)
 nickname_entry.pack()
 
-password_label = tk.Label(login_screen, text="Password:")
+password_label = tk.Label(root, text="Password:")
 password_label.pack()
 
-password_entry = tk.Entry(login_screen, show="*")
+password_entry = tk.Entry(root, show="*")
 password_entry.pack()
 
-login_button = tk.Button(login_screen, text="Login", command=login)
+login_button = tk.Button(root, text="Enter", command=login)
 login_button.pack()
 
-register_button = tk.Button(login_screen, text="Register")
+register_button = tk.Button(root, text="Registration", command=register)
 register_button.pack()
 
 root.mainloop()
+
+# Закрытие соединения с базой данных после завершения работы
+connection.close()
